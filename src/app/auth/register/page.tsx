@@ -2,26 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Wrench,
-  Mail,
-  Lock,
-  User,
-  ShieldCheck,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { Wrench, Mail, Lock, User, Eye, EyeOff, Info } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    role: "Supervisor",
-  });
+  const [form, setForm] = useState({ username: "", email: "", password: "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,13 +29,10 @@ export default function RegisterPage() {
         credentials: "include",
         body: JSON.stringify(form),
       });
-
       const data = await res.json();
 
       if (res.ok) {
         toast.success("Account created!");
-
-        // Send OTP (best-effort — don't block on failure)
         try {
           await fetch("/api/auth/verify/send-otp", {
             method: "POST",
@@ -56,15 +40,12 @@ export default function RegisterPage() {
             body: JSON.stringify({ email: form.email }),
           });
           toast.success("Verification code sent to your email.");
-          setTimeout(() => {
-            window.location.href = `/auth/verify-email?email=${encodeURIComponent(form.email)}`;
-          }, 800);
         } catch {
-          // OTP send failed — still take user to verify page
-          setTimeout(() => {
-            window.location.href = `/auth/verify-email?email=${encodeURIComponent(form.email)}`;
-          }, 800);
+          /* OTP send failed — still redirect */
         }
+        setTimeout(() => {
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(form.email)}`;
+        }, 800);
       } else {
         toast.error(data.message || "Registration failed");
         setLoading(false);
@@ -78,11 +59,11 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center py-12 px-4 relative overflow-hidden">
       <Toaster position="top-center" />
-
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative">
+        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
             <div className="bg-cyan-500 p-2 rounded-xl text-slate-950">
@@ -94,7 +75,7 @@ export default function RegisterPage() {
           </Link>
           <h2 className="text-3xl font-extrabold text-white">Create account</h2>
           <p className="mt-2 text-sm text-slate-400">
-            Already have an account?{" "}
+            Already registered?{" "}
             <Link
               href="/auth/login"
               className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
@@ -105,6 +86,17 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-8 shadow-2xl backdrop-blur-xl">
+          {/* Role notice */}
+          <div className="flex items-start gap-3 bg-slate-900/70 border border-slate-700 rounded-xl p-3.5 mb-5">
+            <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-400 leading-relaxed">
+              New accounts start as{" "}
+              <span className="text-white font-semibold">Reporter</span>. An
+              Administrator can upgrade your role to Supervisor or Technician
+              from the User Management panel.
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username */}
             <div>
@@ -116,6 +108,7 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="username"
                   placeholder="e.g. john_doe"
                   value={form.username}
                   onChange={(e) =>
@@ -136,6 +129,7 @@ export default function RegisterPage() {
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -154,6 +148,7 @@ export default function RegisterPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="new-password"
                   placeholder="Min. 8 characters"
                   value={form.password}
                   onChange={(e) =>
@@ -172,34 +167,6 @@ export default function RegisterPage() {
                     <Eye className="w-4 h-4" />
                   )}
                 </button>
-              </div>
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-1.5">
-                Your Role
-              </label>
-              <div className="relative">
-                <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <select
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm appearance-none"
-                >
-                  <option value="Supervisor">
-                    Supervisor — Manages assets &amp; assigns tickets
-                  </option>
-                  <option value="Technician">
-                    Technician — Performs repairs &amp; logs work
-                  </option>
-                  <option value="Administrator">
-                    Administrator — Full system access
-                  </option>
-                  <option value="Reporter">
-                    Reporter — Submits issue tickets only
-                  </option>
-                </select>
               </div>
             </div>
 

@@ -8,13 +8,14 @@ import {
   LayoutDashboard,
   Boxes,
   AlertTriangle,
-  History,
   LogOut,
   User as UserIcon,
   Menu,
   X,
   Loader2,
   ClipboardList,
+  Users,
+  ShieldAlert,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -72,24 +73,35 @@ export default function DashboardLayout({
       href: "/dashboard",
       icon: LayoutDashboard,
       exact: true,
+      roles: ["Administrator", "Supervisor", "Technician", "Reporter"],
     },
     {
       name: "Asset Registry",
       href: "/dashboard/assets",
       icon: Boxes,
       exact: false,
+      roles: ["Administrator", "Supervisor", "Technician"],
     },
     {
       name: "Issue Triage",
       href: "/dashboard/issues",
       icon: AlertTriangle,
       exact: false,
+      roles: ["Administrator", "Supervisor", "Technician", "Reporter"],
     },
     {
       name: "Service History",
       href: "/dashboard/service-history",
       icon: ClipboardList,
       exact: false,
+      roles: ["Administrator", "Supervisor", "Technician"],
+    },
+    {
+      name: "User Management",
+      href: "/dashboard/users",
+      icon: Users,
+      exact: false,
+      roles: ["Administrator"], // Admin only
     },
   ];
 
@@ -171,26 +183,33 @@ export default function DashboardLayout({
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-1">
-          {navItems.map((item) => {
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all ${
-                  isActive
-                    ? "bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/10"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-                }`}
-              >
-                <item.icon className="w-5 h-5 shrink-0" />
-                {item.name}
-              </Link>
-            );
-          })}
+          {navItems
+            .filter((item) => user && item.roles.includes(user.role))
+            .map((item) => {
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all ${
+                    isActive
+                      ? "bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/10"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                  }`}
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                  {item.name}
+                  {item.roles.length === 1 &&
+                    item.roles[0] === "Administrator" &&
+                    !isActive && (
+                      <ShieldAlert className="w-3.5 h-3.5 ml-auto text-purple-400 shrink-0" />
+                    )}
+                </Link>
+              );
+            })}
         </nav>
 
         {/* Logout */}
