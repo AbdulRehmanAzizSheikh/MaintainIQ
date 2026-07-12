@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Wrench, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
