@@ -107,7 +107,7 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+      <div className="h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
         <Loader2 className="w-10 h-10 text-cyan-500 animate-spin mb-4" />
         <p className="text-slate-400 text-sm font-semibold tracking-wide">
           Loading MaintainIQ Workspace...
@@ -117,7 +117,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="max-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
+    <div className="h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
       <Toaster position="top-right" />
 
       {/* Mobile Top Bar */}
@@ -225,7 +225,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+      <main className="flex-1 flex flex-col max-h-screen overflow-x-hidden">
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
           {children}
         </div>

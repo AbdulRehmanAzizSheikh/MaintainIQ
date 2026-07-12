@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MaintainIQ - Digital Asset Maintenance Ledger",
-  description: "MaintainIQ gives physical assets a digital identity, a QR-accessible failure-reporting portal, automated AI diagnostics, and a permanent service ledger.",
+  description:
+    "MaintainIQ gives physical assets a digital identity, a QR-accessible failure-reporting portal, automated AI diagnostics, and a permanent service ledger.",
 };
 
 export default function RootLayout({
@@ -28,7 +29,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="max-h-full flex flex-col">
         <Toaster position="top-right" />
         {children}
       </body>

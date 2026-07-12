@@ -34,19 +34,25 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/assets — create new asset
+// Allowed: Administrator, Supervisor, Technician (NOT Reporter)
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
+    if (user.role === "Reporter") {
+      return NextResponse.json(
+        { message: "Reporters cannot add assets." },
+        { status: 403 },
+      );
+    }
+
     await connectMongodb();
     const body = await req.json();
 
-    // Generate unique asset tag
-    const assetTag = body.assetTag || `MIQ-${uuidv4().slice(0, 8).toUpperCase()}`;
-
-    // Generate QR code pointing to the public asset page
+    const assetTag =
+      body.assetTag || `MIQ-${uuidv4().slice(0, 8).toUpperCase()}`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const qrData = `${baseUrl}/asset/${assetTag}/public`;
     const qrBase64 = await QRCode.toDataURL(qrData, {
@@ -55,7 +61,6 @@ export async function POST(req: NextRequest) {
       color: { dark: "#000000", light: "#ffffff" },
     });
 
-    // Upload QR to Cloudinary
     const qrCodeUrl = await uploadImage(qrBase64, "maintainiq/qrcodes");
 
     const asset = await Asset.create({

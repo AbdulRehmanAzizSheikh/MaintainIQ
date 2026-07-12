@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Filter, QrCode, Download, Eye, ExternalLink, ShieldCheck } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  QrCode,
+  Download,
+  Eye,
+  ExternalLink,
+  ShieldCheck,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Asset {
@@ -75,8 +84,12 @@ export default function AssetsList() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-white">Asset Inventory</h2>
-          <p className="text-sm text-slate-400">Manage facility assets, monitor status, and export QR codes.</p>
+          <h2 className="text-2xl font-extrabold text-white">
+            Asset Inventory
+          </h2>
+          <p className="text-sm text-slate-400">
+            Manage facility assets, monitor status, and export QR codes.
+          </p>
         </div>
         <Link
           href="/dashboard/assets/new"
@@ -89,7 +102,10 @@ export default function AssetsList() {
 
       {/* Filters & Search */}
       <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-        <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="flex flex-col md:flex-row gap-4 items-center justify-between"
+        >
           <div className="relative w-full md:max-w-md">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4.5 w-4.5 text-slate-500" />
@@ -148,7 +164,10 @@ export default function AssetsList() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-slate-900 border border-slate-800 animate-pulse rounded-xl"></div>
+            <div
+              key={i}
+              className="h-16 bg-slate-900 border border-slate-800 animate-pulse rounded-xl"
+            ></div>
           ))}
         </div>
       ) : assets.length === 0 ? (
@@ -156,7 +175,8 @@ export default function AssetsList() {
           <QrCode className="w-12 h-12 text-slate-600 mx-auto mb-4" />
           <h3 className="font-bold text-white mb-2">No Assets Found</h3>
           <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6">
-            Register your physical assets to generate their QR codes and start tracking maintenance issues.
+            Register your physical assets to generate their QR codes and start
+            tracking maintenance issues.
           </p>
           <Link
             href="/dashboard/assets/new"
@@ -181,31 +201,52 @@ export default function AssetsList() {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {assets.map((asset) => (
-                  <tr key={asset._id} className="hover:bg-slate-800/20 transition-colors">
+                  <tr
+                    key={asset._id}
+                    className="hover:bg-slate-800/20 transition-colors"
+                  >
                     {/* Name and Tag */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-bold text-white">{asset.name}</div>
-                      <span className="text-xs text-slate-500 font-mono font-semibold">{asset.assetTag}</span>
+                      <span className="text-xs text-slate-500 font-mono font-semibold">
+                        {asset.assetTag}
+                      </span>
                     </td>
 
                     {/* Category */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-slate-300 font-medium">{asset.category}</span>
+                      <span className="text-slate-300 font-medium">
+                        {asset.category}
+                      </span>
                     </td>
 
                     {/* Location */}
                     <td className="px-6 py-4 whitespace-nowrap text-slate-400">
                       <div className="text-xs leading-relaxed">
-                        {asset.location.building && <span>Bldg: {asset.location.building}</span>}
-                        {asset.location.floor && <span className="block">Flr: {asset.location.floor}</span>}
-                        {asset.location.room && <span className="block">Rm: {asset.location.room}</span>}
-                        {!asset.location.building && !asset.location.floor && !asset.location.room && <span>N/A</span>}
+                        {asset.location.building && (
+                          <span>Bldg: {asset.location.building}</span>
+                        )}
+                        {asset.location.floor && (
+                          <span className="block">
+                            Flr: {asset.location.floor}
+                          </span>
+                        )}
+                        {asset.location.room && (
+                          <span className="block">
+                            Rm: {asset.location.room}
+                          </span>
+                        )}
+                        {!asset.location.building &&
+                          !asset.location.floor &&
+                          !asset.location.room && <span>N/A</span>}
                       </div>
                     </td>
 
                     {/* Status */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${getStatusBadge(asset.status)}`}>
+                      <span
+                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${getStatusBadge(asset.status)}`}
+                      >
                         {asset.status.replace("_", " ")}
                       </span>
                     </td>
@@ -231,7 +272,9 @@ export default function AssetsList() {
                           </a>
                         </div>
                       ) : (
-                        <span className="text-slate-600 text-xs">No QR URL</span>
+                        <span className="text-slate-600 text-xs">
+                          No QR URL
+                        </span>
                       )}
                     </td>
 
