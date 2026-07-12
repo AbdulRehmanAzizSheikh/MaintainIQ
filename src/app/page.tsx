@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Wrench, Shield, QrCode, Cpu, ArrowRight, Building, CheckCircle2, History } from "lucide-react";
+import {
+  Wrench,
+  Shield,
+  QrCode,
+  Cpu,
+  ArrowRight,
+  Building,
+  CheckCircle2,
+  History,
+} from "lucide-react";
 
 export default function Home() {
   return (
@@ -23,9 +32,24 @@ export default function Home() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#features" className="hover:text-cyan-400 transition-colors">Features</a>
-            <a href="#sectors" className="hover:text-cyan-400 transition-colors">Sectors</a>
-            <a href="#how-it-works" className="hover:text-cyan-400 transition-colors">Workflow</a>
+            <a
+              href="#features"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Features
+            </a>
+            <a
+              href="#sectors"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Sectors
+            </a>
+            <a
+              href="#how-it-works"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Workflow
+            </a>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -54,11 +78,17 @@ export default function Home() {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-8 leading-tight animate-fade-in">
-            Give Every Asset a <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Digital Identity</span> & Permanent Service History
+            Give Every Asset a{" "}
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Digital Identity
+            </span>{" "}
+            & Permanent Service History
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Scan QR codes to report issues, receive instant AI diagnostics, coordinate assignments with technicians, and track accountability through a verified service history.
+            Scan QR codes to report issues, receive instant AI diagnostics,
+            coordinate assignments with technicians, and track accountability
+            through a verified service history.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -70,7 +100,7 @@ export default function Home() {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/auth/login"
+              href="/dashboard"
               className="w-full sm:w-auto px-8 h-14 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white font-bold rounded-xl flex items-center justify-center transition-all"
             >
               Access Dashboard
@@ -80,12 +110,18 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-20 bg-slate-900/50 border-t border-slate-800 px-6">
+      <section
+        id="features"
+        className="py-20 bg-slate-900/50 border-t border-slate-800 px-6"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold mb-4">Unlocking Professional Maintenance Value</h2>
+            <h2 className="text-3xl font-extrabold mb-4">
+              Unlocking Professional Maintenance Value
+            </h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              MaintainIQ is not just about QR codes. It handles full triage, technicians workflow, evidence capture, and preventive scheduling.
+              MaintainIQ is not just about QR codes. It handles full triage,
+              technicians workflow, evidence capture, and preventive scheduling.
             </p>
           </div>
 
@@ -96,7 +132,8 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-lg mb-3">QR Public Portals</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Scan equipment QR labels to access public status pages. Report failures anonymously with photos and contact details instantly.
+                Scan equipment QR labels to access public status pages. Report
+                failures anonymously with photos and contact details instantly.
               </p>
             </div>
 
@@ -106,7 +143,9 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-lg mb-3">AI Recommendations</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Generative AI analyzes reported issues, generates root-cause hypotheses, maps immediate safety procedures, and estimates repair durations.
+                Generative AI analyzes reported issues, generates root-cause
+                hypotheses, maps immediate safety procedures, and estimates
+                repair durations.
               </p>
             </div>
 
@@ -116,7 +155,8 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-lg mb-3">Triage & Assignment</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Supervisors allocate open tickets to technicians based on workload. Track statuses in real-time from assigned to resolved.
+                Supervisors allocate open tickets to technicians based on
+                workload. Track statuses in real-time from assigned to resolved.
               </p>
             </div>
 
@@ -126,7 +166,9 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-lg mb-3">Permanent History</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Every repair logs parts replaced, maintenance costs, and before/after images in a permanent service registry for auditing.
+                Every repair logs parts replaced, maintenance costs, and
+                before/after images in a permanent service registry for
+                auditing.
               </p>
             </div>
           </div>
@@ -137,9 +179,12 @@ export default function Home() {
       <section id="sectors" className="py-20 border-t border-slate-800 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold mb-4">Tailored For Any Physical Workspace</h2>
+            <h2 className="text-3xl font-extrabold mb-4">
+              Tailored For Any Physical Workspace
+            </h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              MaintainIQ is designed to support assets in diverse settings, giving physical operations audit-ready visibility.
+              MaintainIQ is designed to support assets in diverse settings,
+              giving physical operations audit-ready visibility.
             </p>
           </div>
 
@@ -152,9 +197,14 @@ export default function Home() {
               { label: "Housing & Real Estate", icon: Building },
               { label: "Hotels & Restaurants", icon: Building },
             ].map((sector, i) => (
-              <div key={i} className="bg-slate-800/30 border border-slate-800 p-6 rounded-xl text-center flex flex-col items-center justify-center hover:border-cyan-500/30 transition-colors">
+              <div
+                key={i}
+                className="bg-slate-800/30 border border-slate-800 p-6 rounded-xl text-center flex flex-col items-center justify-center hover:border-cyan-500/30 transition-colors"
+              >
                 <sector.icon className="w-8 h-8 text-cyan-400 mb-4" />
-                <span className="text-sm font-semibold text-slate-300">{sector.label}</span>
+                <span className="text-sm font-semibold text-slate-300">
+                  {sector.label}
+                </span>
               </div>
             ))}
           </div>
@@ -162,38 +212,49 @@ export default function Home() {
       </section>
 
       {/* Workflow steps */}
-      <section id="how-it-works" className="py-20 bg-slate-950 border-t border-slate-800 px-6">
+      <section
+        id="how-it-works"
+        className="py-20 bg-slate-950 border-t border-slate-800 px-6"
+      >
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-extrabold text-center mb-16">The Incident Triage Lifecycle</h2>
+          <h2 className="text-3xl font-extrabold text-center mb-16">
+            The Incident Triage Lifecycle
+          </h2>
 
           <div className="space-y-12">
             {[
               {
                 step: "01",
                 title: "QR Scan & Reporting",
-                desc: "An occupant, student, or staff scans the asset's QR code. They report a faulty AC, leaking pipe, or broken light with an optional photo upload. No authentication is required for report submission."
+                desc: "An occupant, student, or staff scans the asset's QR code. They report a faulty AC, leaking pipe, or broken light with an optional photo upload. No authentication is required for report submission.",
               },
               {
                 step: "02",
                 title: "AI Analysis",
-                desc: "Our platform immediately requests Google Gemini diagnostics. The AI identifies potential root causes, offers initial troubleshooting advice, drafts a safety check, and assigns priority tags."
+                desc: "Our platform immediately requests Google Gemini diagnostics. The AI identifies potential root causes, offers initial troubleshooting advice, drafts a safety check, and assigns priority tags.",
               },
               {
                 step: "03",
                 title: "Assignment & Execution",
-                desc: "The supervisor assigns the open issue to an active technician. The technician logs in, inspects the AI diagnostics, executes repairs, and logs completion, before/after evidence, parts replaced, and costs."
+                desc: "The supervisor assigns the open issue to an active technician. The technician logs in, inspects the AI diagnostics, executes repairs, and logs completion, before/after evidence, parts replaced, and costs.",
               },
               {
                 step: "04",
                 title: "Service Records ledger",
-                desc: "The system logs a permanent service record, updates the asset status back to operational, schedules the next preventive checks, and completes the accountability chain."
-              }
+                desc: "The system logs a permanent service record, updates the asset status back to operational, schedules the next preventive checks, and completes the accountability chain.",
+              },
             ].map((item, idx) => (
               <div key={idx} className="flex gap-6 items-start md:items-center">
-                <div className="text-4xl md:text-5xl font-black text-cyan-500/30 tracking-tight">{item.step}</div>
+                <div className="text-4xl md:text-5xl font-black text-cyan-500/30 tracking-tight">
+                  {item.step}
+                </div>
                 <div>
-                  <h3 className="font-bold text-lg text-white mb-2">{item.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                  <h3 className="font-bold text-lg text-white mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
             ))}
@@ -213,7 +274,8 @@ export default function Home() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            &copy; {new Date().getFullYear()} MaintainIQ. Built for saylani hackathon batch-17.
+            &copy; {new Date().getFullYear()} MaintainIQ. Built for saylani
+            hackathon batch-17.
           </p>
         </div>
       </footer>

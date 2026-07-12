@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Wrench, Mail, Lock, User, Eye, EyeOff, Info } from "lucide-react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
@@ -55,7 +56,16 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+  const router = useRouter();
 
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) router.push("/dashboard");
+      setLoading(false);
+    }
+    fetchUser();
+  }, [router]);
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center py-12 px-4 relative overflow-hidden">
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />

@@ -117,7 +117,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
+    <div className="max-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
       <Toaster position="top-right" />
 
       {/* Mobile Top Bar */}

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Wrench, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,16 @@ export default function LoginPage() {
     }
   };
 
+  const router = useRouter();
+
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) router.push("/dashboard");
+      setLoading(false);
+    }
+    fetchUser();
+  }, [router]);
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center py-12 px-4 relative overflow-hidden">
       {/* Background glows */}
