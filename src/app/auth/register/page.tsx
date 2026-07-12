@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Wrench, Mail, Lock, User, Eye, EyeOff, Info } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center py-12 px-4 relative overflow-hidden">
-      <Toaster position="top-center" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
 

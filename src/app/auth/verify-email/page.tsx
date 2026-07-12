@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Wrench, ShieldCheck, RefreshCw } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 function VerifyForm() {
   const searchParams = useSearchParams();
@@ -135,7 +135,6 @@ function VerifyForm() {
 export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center py-12 px-4 relative overflow-hidden">
-      <Toaster position="top-center" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative">
