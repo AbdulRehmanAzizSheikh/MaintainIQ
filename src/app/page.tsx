@@ -14,10 +14,10 @@ import {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-cyan-500 selection:text-slate-900">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-slate-900 text-white font-sans selection:bg-cyan-500 selection:text-slate-900">
       {/* Background decoration */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -z-10"></div>
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10"></div>
+      {/* <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10"></div> */}
 
       {/* Header */}
       <header className="border-b border-slate-800 backdrop-blur-md sticky top-0 z-50 bg-slate-900/80">
@@ -61,7 +61,7 @@ export default function Home() {
             </Link>
             <Link
               href="/auth/register"
-              className="text-sm font-semibold bg-cyan-500 text-slate-950 px-4 py-2 rounded-lg hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20"
+              className="text-sm font-semibold max-[450px]:hidden bg-cyan-500 text-slate-950 px-4 py-2 rounded-lg hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20"
             >
               Register Portal
             </Link>
