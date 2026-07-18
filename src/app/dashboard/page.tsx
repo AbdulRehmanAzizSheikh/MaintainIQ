@@ -419,13 +419,13 @@ export default function Dashboard() {
             <AlertTriangle className="w-5 h-5 text-amber-400" />
             <h4 className="font-bold text-white">Recent Failure Tickets</h4>
           </div>
-          <Link
+          {/* <Link
             href="/dashboard/issues"
             className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
           >
             Manage All Tickets
             <ChevronRight className="w-4 h-4" />
-          </Link>
+          </Link> */}
         </div>
 
         {stats.recentIssues.length === 0 ? (
@@ -442,7 +442,7 @@ export default function Dashboard() {
                   <th className="px-6 py-4">Priority</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Logged Time</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  {/* <th className="px-6 py-4 text-right">Actions</th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -479,14 +479,14 @@ export default function Dashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500">
                       {new Date(issue.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-right">
                       <Link
                         href={`/dashboard/issues/${issue._id}`}
                         className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
                       >
                         Inspect ticket &rarr;
                       </Link>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>
