@@ -82,6 +82,15 @@ export default function IssueDetailPage({
   useEffect(() => {
     const load = async () => {
       try {
+        const meRes = await fetch("/api/auth/me");
+        const meData = await meRes.json();
+
+        if (!meRes.ok || meData.user?.role === "Technician") {
+          toast.error("Access denied.");
+          router.push("/dashboard/issues");
+          return;
+        }
+
         const [issueRes, usersRes] = await Promise.all([
           fetch(`/api/issues/${id}`),
           fetch("/api/users"),
@@ -164,7 +173,11 @@ export default function IssueDetailPage({
         setIssue((prev) =>
           prev ? { ...prev, aiSuggestion: data.recommendation } : prev,
         );
-        toast.success(data.isMock ? "Smart AI diagnostics generated!" : "AI recommendation fetched!");
+        toast.success(
+          data.isMock
+            ? "Smart AI diagnostics generated!"
+            : "AI recommendation fetched!",
+        );
       } else {
         toast.error("AI recommendation failed");
       }
@@ -232,7 +245,9 @@ export default function IssueDetailPage({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-slate-400">Name</span>
-                <p className="text-white font-semibold mt-0.5">{issue.asset?.name}</p>
+                <p className="text-white font-semibold mt-0.5">
+                  {issue.asset?.name}
+                </p>
               </div>
               <div>
                 <span className="text-slate-400">Asset Tag</span>
@@ -323,7 +338,11 @@ export default function IssueDetailPage({
                 disabled={aiLoading}
                 className="text-xs font-bold px-3 py-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-all disabled:opacity-50"
               >
-                {aiLoading ? "Analyzing..." : issue.aiSuggestion ? "Re-analyze" : "Get AI Diagnosis"}
+                {aiLoading
+                  ? "Analyzing..."
+                  : issue.aiSuggestion
+                    ? "Re-analyze"
+                    : "Get AI Diagnosis"}
               </button>
             </div>
             {issue.aiSuggestion ? (
@@ -332,7 +351,8 @@ export default function IssueDetailPage({
               </div>
             ) : (
               <p className="text-sm text-slate-500 italic">
-                Click &ldquo;Get AI Diagnosis&rdquo; to receive Gemini-powered root cause analysis and maintenance recommendations.
+                Click &ldquo;Get AI Diagnosis&rdquo; to receive Gemini-powered
+                root cause analysis and maintenance recommendations.
               </p>
             )}
           </div>
@@ -394,11 +414,13 @@ export default function IssueDetailPage({
                   className="w-full bg-slate-950 border border-slate-800 text-slate-300 py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                 >
                   <option value="">— Unassigned —</option>
-                  {users.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.username} ({u.role})
-                    </option>
-                  ))}
+                  {users
+                    .filter((u) => u.role === "Technician")
+                    .map((u) => (
+                      <option key={u._id} value={u._id}>
+                        {u.username} ({u.role})
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -435,7 +457,8 @@ export default function IssueDetailPage({
               Service Record
             </h3>
             <p className="text-xs text-slate-400 mb-4">
-              Once the repair is done, log a service record with parts replaced, cost, and photos.
+              Once the repair is done, log a service record with parts replaced,
+              cost, and photos.
             </p>
             <button
               onClick={logServiceRecord}

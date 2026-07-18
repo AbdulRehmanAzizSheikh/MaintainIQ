@@ -35,9 +35,9 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success(`Welcome back, ${data.user?.username || ""}!`);
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 500);
+        const redirectPath =
+          data.user?.role === "Technician" ? "/dashboard/issues" : "/dashboard";
+        router.push(redirectPath);
       } else {
         toast.error(data.message || "Login failed");
         if (res.status === 403 && data.email) {
@@ -61,7 +61,12 @@ export default function LoginPage() {
   useEffect(() => {
     async function fetchUser() {
       const res = await fetch("/api/auth/me");
-      if (res.ok) router.push("/dashboard");
+      if (res.ok) {
+        const data = await res.json();
+        const redirectPath =
+          data.user?.role === "Technician" ? "/dashboard/issues" : "/dashboard";
+        router.push(redirectPath);
+      }
       setLoading(false);
     }
     fetchUser();
