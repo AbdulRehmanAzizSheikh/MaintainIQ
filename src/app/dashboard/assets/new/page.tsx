@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Wrench, ArrowLeft, Save, Sparkles } from "lucide-react";
@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 export default function NewAsset() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     category: "Other",
@@ -50,9 +51,12 @@ export default function NewAsset() {
         organization: formData.organization,
       };
 
-      if (formData.purchaseDate) submitData.purchaseDate = new Date(formData.purchaseDate);
-      if (formData.warrantyExpiry) submitData.warrantyExpiry = new Date(formData.warrantyExpiry);
-      if (formData.nextServiceDate) submitData.nextServiceDate = new Date(formData.nextServiceDate);
+      if (formData.purchaseDate)
+        submitData.purchaseDate = new Date(formData.purchaseDate);
+      if (formData.warrantyExpiry)
+        submitData.warrantyExpiry = new Date(formData.warrantyExpiry);
+      if (formData.nextServiceDate)
+        submitData.nextServiceDate = new Date(formData.nextServiceDate);
 
       const res = await fetch("/api/assets", {
         method: "POST",
@@ -76,6 +80,21 @@ export default function NewAsset() {
     }
   };
 
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        setUserRole(d.user?.role || "");
+        if (!["Administrator", "Supervisor"].includes(d.user?.role)) {
+          toast.error(
+            "Only Administrators and Supervisors can register assets.",
+          );
+          router.push("/dashboard");
+        }
+      })
+      .catch(() => router.push("/dashboard"));
+  }, [router]);
+
   return (
     <div className="space-y-6">
       {/* Breadcrumbs */}
@@ -88,7 +107,9 @@ export default function NewAsset() {
         </Link>
         <div>
           <h2 className="text-2xl font-extrabold text-white">Register Asset</h2>
-          <p className="text-xs text-slate-400">Initialize a new physical asset ledger and generate its QR code.</p>
+          <p className="text-xs text-slate-400">
+            Initialize a new physical asset ledger and generate its QR code.
+          </p>
         </div>
       </div>
 
@@ -105,7 +126,10 @@ export default function NewAsset() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="name" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Asset Name *
                   </label>
                   <input
@@ -114,19 +138,26 @@ export default function NewAsset() {
                     required
                     placeholder="e.g. Server Room AC 1"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="category" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="category"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Category *
                   </label>
                   <select
                     id="category"
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   >
                     <option value="HVAC">HVAC</option>
@@ -144,7 +175,10 @@ export default function NewAsset() {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                >
                   Asset Description
                 </label>
                 <textarea
@@ -152,7 +186,9 @@ export default function NewAsset() {
                   rows={4}
                   placeholder="e.g. Wall mounted Daikin inverter AC, 1.5 ton capacity. Mounted on West wall."
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm resize-none"
                 />
               </div>
@@ -167,7 +203,10 @@ export default function NewAsset() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label htmlFor="building" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="building"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Building
                   </label>
                   <input
@@ -178,7 +217,10 @@ export default function NewAsset() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        location: { ...formData.location, building: e.target.value },
+                        location: {
+                          ...formData.location,
+                          building: e.target.value,
+                        },
                       })
                     }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
@@ -186,7 +228,10 @@ export default function NewAsset() {
                 </div>
 
                 <div>
-                  <label htmlFor="floor" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="floor"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Floor
                   </label>
                   <input
@@ -197,7 +242,10 @@ export default function NewAsset() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        location: { ...formData.location, floor: e.target.value },
+                        location: {
+                          ...formData.location,
+                          floor: e.target.value,
+                        },
                       })
                     }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
@@ -205,7 +253,10 @@ export default function NewAsset() {
                 </div>
 
                 <div>
-                  <label htmlFor="room" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="room"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Room / Area
                   </label>
                   <input
@@ -216,7 +267,10 @@ export default function NewAsset() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        location: { ...formData.location, room: e.target.value },
+                        location: {
+                          ...formData.location,
+                          room: e.target.value,
+                        },
                       })
                     }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
@@ -230,11 +284,16 @@ export default function NewAsset() {
           <div className="space-y-6">
             {/* Manufacturing specs */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
-              <h3 className="font-bold text-white border-b border-slate-800 pb-3">Manufacture Registry</h3>
+              <h3 className="font-bold text-white border-b border-slate-800 pb-3">
+                Manufacture Registry
+              </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="manufacturer" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="manufacturer"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Manufacturer
                   </label>
                   <input
@@ -242,13 +301,18 @@ export default function NewAsset() {
                     type="text"
                     placeholder="e.g. Daikin, Dell"
                     value={formData.manufacturer}
-                    onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, manufacturer: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="model" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="model"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Model Number
                   </label>
                   <input
@@ -256,13 +320,18 @@ export default function NewAsset() {
                     type="text"
                     placeholder="e.g. FTKF50TV16U"
                     value={formData.model}
-                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, model: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="serialNumber" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="serialNumber"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Serial Number
                   </label>
                   <input
@@ -270,13 +339,18 @@ export default function NewAsset() {
                     type="text"
                     placeholder="e.g. SN-84729472"
                     value={formData.serialNumber}
-                    onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, serialNumber: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="organization" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="organization"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Department / Org
                   </label>
                   <input
@@ -284,7 +358,9 @@ export default function NewAsset() {
                     type="text"
                     placeholder="e.g. IT Department"
                     value={formData.organization}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, organization: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
@@ -293,17 +369,24 @@ export default function NewAsset() {
 
             {/* Lifecycle and Dates */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
-              <h3 className="font-bold text-white border-b border-slate-800 pb-3">Operational Timeline</h3>
+              <h3 className="font-bold text-white border-b border-slate-800 pb-3">
+                Operational Timeline
+              </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="status" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="status"
+                    className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                  >
                     Initial Status
                   </label>
                   <select
                     id="status"
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, status: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   >
                     <option value="operational">Operational</option>
@@ -314,40 +397,61 @@ export default function NewAsset() {
                 </div>
 
                 <div>
-                  <label htmlFor="purchaseDate" className="block text-xs font-bold text-slate-400 tracking-wider mb-2">
+                  <label
+                    htmlFor="purchaseDate"
+                    className="block text-xs font-bold text-slate-400 tracking-wider mb-2"
+                  >
                     Purchase Date
                   </label>
                   <input
                     id="purchaseDate"
                     type="date"
                     value={formData.purchaseDate}
-                    onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, purchaseDate: e.target.value })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="warrantyExpiry" className="block text-xs font-bold text-slate-400 tracking-wider mb-2">
+                  <label
+                    htmlFor="warrantyExpiry"
+                    className="block text-xs font-bold text-slate-400 tracking-wider mb-2"
+                  >
                     Warranty Expiry Date
                   </label>
                   <input
                     id="warrantyExpiry"
                     type="date"
                     value={formData.warrantyExpiry}
-                    onChange={(e) => setFormData({ ...formData, warrantyExpiry: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        warrantyExpiry: e.target.value,
+                      })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="nextServiceDate" className="block text-xs font-bold text-slate-400 tracking-wider mb-2">
+                  <label
+                    htmlFor="nextServiceDate"
+                    className="block text-xs font-bold text-slate-400 tracking-wider mb-2"
+                  >
                     Next Preventive Service Date
                   </label>
                   <input
                     id="nextServiceDate"
                     type="date"
                     value={formData.nextServiceDate}
-                    onChange={(e) => setFormData({ ...formData, nextServiceDate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        nextServiceDate: e.target.value,
+                      })
+                    }
                     className="block w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                   />
                 </div>

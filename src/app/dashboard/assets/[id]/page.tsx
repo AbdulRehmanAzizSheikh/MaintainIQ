@@ -171,8 +171,8 @@ export default function AssetDetail({
       <div className="space-y-6">
         <div className="h-8 w-64 bg-slate-800 animate-pulse rounded"></div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="h-[450px] lg:col-span-2 bg-slate-800 animate-pulse rounded-2xl"></div>
-          <div className="h-[450px] bg-slate-800 animate-pulse rounded-2xl"></div>
+          <div className="h-112.5 lg:col-span-2 bg-slate-800 animate-pulse rounded-2xl"></div>
+          <div className="h-112.5 bg-slate-800 animate-pulse rounded-2xl"></div>
         </div>
       </div>
     );
@@ -229,8 +229,8 @@ export default function AssetDetail({
           >
             Scan Preview
           </Link>
-          {/* Edit — Admin only */}
-          {userRole === "Administrator" && (
+          {/* Edit — Admin/Supervisor only */}
+          {["Administrator", "Supervisor"].includes(userRole) && (
             <Link
               href={`/dashboard/assets/${asset._id}/edit`}
               className="px-4 py-2.5 border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all"
@@ -239,8 +239,8 @@ export default function AssetDetail({
               Edit Asset
             </Link>
           )}
-          {/* Delete — Admin only */}
-          {userRole === "Administrator" && (
+          {/* Delete — Admin/Supervisor only */}
+          {["Administrator", "Supervisor"].includes(userRole) && (
             <button
               onClick={handleDeleteAsset}
               disabled={deleting}
@@ -407,7 +407,7 @@ export default function AssetDetail({
                     className="w-48 h-48 rounded"
                   />
                 </div>
-                <div className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                <div className="text-xs text-slate-400 leading-relaxed max-w-55">
                   Affix this code to the physical asset. Anyone can scan it to
                   submit failure tickets.
                 </div>
@@ -537,7 +537,7 @@ export default function AssetDetail({
                   className="relative space-y-1 bg-slate-950 p-4 border border-slate-850 rounded-xl"
                 >
                   {/* Timeline point */}
-                  <span className="absolute -left-[22px] top-[22px] w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900"></span>
+                  <span className="absolute -left-5.5 top-5.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900"></span>
 
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-mono text-slate-500">

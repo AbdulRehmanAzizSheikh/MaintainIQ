@@ -6,9 +6,20 @@ import { v4 as uuidv4 } from "uuid";
 import QRCode from "qrcode";
 import { uploadImage } from "@/utils/cloudinary";
 
-// GET /api/assets — list all assets
+// GET /api/assets — list all assets (Admin/Supervisor only)
 export async function GET(req: NextRequest) {
   try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser)
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    if (!["Administrator", "Supervisor"].includes(currentUser.role)) {
+      return NextResponse.json(
+        { message: "You do not have permission to view assets." },
+        { status: 403 },
+      );
+    }
+
     await connectMongodb();
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
@@ -34,16 +45,16 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/assets — create new asset
-// Allowed: Administrator, Supervisor, Technician (NOT Reporter)
+// Allowed: Administrator, Supervisor (NOT Technician, Reporter)
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    if (user.role === "Reporter") {
+    if (!["Administrator", "Supervisor"].includes(user.role)) {
       return NextResponse.json(
-        { message: "Reporters cannot add assets." },
+        { message: "Only administrators and supervisors can add assets." },
         { status: 403 },
       );
     }

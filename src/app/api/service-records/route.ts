@@ -11,8 +11,10 @@ export async function GET(req: NextRequest) {
     await connectMongodb();
     const { searchParams } = new URL(req.url);
     const assetId = searchParams.get("asset");
+    const performedBy = searchParams.get("performedBy");
     const query: Record<string, unknown> = {};
     if (assetId) query.asset = assetId;
+    if (performedBy) query.performedBy = performedBy;
 
     const records = await ServiceRecord.find(query)
       .populate("asset", "name assetTag category")

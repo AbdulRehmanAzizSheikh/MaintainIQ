@@ -3,6 +3,7 @@ import { connectMongodb } from "@/lib/db";
 import Issue from "@/lib/models/Issue";
 import Asset from "@/lib/models/Asset";
 import { getCurrentUser } from "@/utils/getUser";
+import sendMail from "@/utils/email/send";
 
 // GET /api/issues/[id]
 export async function GET(
@@ -43,26 +44,98 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    // If resolving, set resolvedAt and update asset status
-    if (body.status === "resolved" || body.status === "closed") {
-      body.resolvedAt = new Date();
+    const existingIssue = await Issue.findById(id)
+      .populate("asset", "name assetTag")
+      .populate("assignedTo", "username email")
+      .populate("reportedBy.userId", "username email");
+
+    if (!existingIssue)
+      return NextResponse.json({ message: "Issue not found" }, { status: 404 });
+
+    const isAdminOrSupervisor =
+      user.role === "Administrator" || user.role === "Supervisor";
+    const isTechnician = user.role === "Technician";
+
+    const updateData: Record<string, unknown> = {};
+
+    if (isAdminOrSupervisor) {
+      if (body.assignedTo !== undefined)
+        updateData.assignedTo = body.assignedTo;
+      if (body.priority !== undefined) updateData.priority = body.priority;
+      if (body.status !== undefined) updateData.status = body.status;
+      if (body.resolutionNotes !== undefined)
+        updateData.resolutionNotes = body.resolutionNotes;
+      if (body.aiSuggestion !== undefined)
+        updateData.aiSuggestion = body.aiSuggestion;
+    } else if (isTechnician) {
+      const assignedId = existingIssue.assignedTo?._id?.toString();
+      if (assignedId !== user._id.toString()) {
+        return NextResponse.json(
+          { message: "Only assigned technicians can update this issue." },
+          { status: 403 },
+        );
+      }
+      if (body.assignedTo && body.assignedTo !== assignedId) {
+        return NextResponse.json(
+          { message: "Technicians cannot reassign issues." },
+          { status: 403 },
+        );
+      }
+      if (body.status !== undefined) updateData.status = body.status;
+      if (body.resolutionNotes !== undefined)
+        updateData.resolutionNotes = body.resolutionNotes;
+    } else {
+      return NextResponse.json(
+        { message: "You do not have permission to update issues." },
+        { status: 403 },
+      );
     }
 
-    const issue = await Issue.findByIdAndUpdate(id, body, { new: true })
+    if (body.status === "resolved" || body.status === "closed") {
+      updateData.resolvedAt = new Date();
+    }
+
+    const issue = await Issue.findByIdAndUpdate(id, updateData, { new: true })
       .populate("asset", "name assetTag")
       .populate("assignedTo", "username email");
 
     if (!issue)
       return NextResponse.json({ message: "Issue not found" }, { status: 404 });
 
-    // If assigned, update asset status to under_maintenance
+    const assignmentChanged =
+      isAdminOrSupervisor &&
+      body.assignedTo &&
+      existingIssue.assignedTo?._id?.toString() !== body.assignedTo;
+
+    if (body.assignedTo && issue.status === "open" && !body.status) {
+      issue.status = "assigned";
+      await Issue.findByIdAndUpdate(id, { status: "assigned" });
+    }
+
+    if (assignmentChanged && issue.assignedTo?.email) {
+      await sendMail({
+        to: issue.assignedTo.email,
+        subject: `Issue assigned: ${issue.title}`,
+        htmlTemplate: `
+          <div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.6;">
+            <h2 style="color:#0f172a;">New issue assigned</h2>
+            <p><strong>${issue.title}</strong></p>
+            <p>${issue.description}</p>
+            <p><strong>Asset:</strong> ${issue.asset?.name} (${issue.asset?.assetTag})</p>
+            <p><strong>Urgency:</strong> ${issue.priority}</p>
+            <p><strong>Current status:</strong> ${issue.status}</p>
+            <p style="margin-top:24px;">Please log in to MaintainIQ to review and resolve this ticket.</p>
+          </div>
+        `,
+      });
+    }
+
     if (body.assignedTo || body.status === "in_progress") {
       await Asset.findByIdAndUpdate(issue.asset, {
         status: "under_maintenance",
       });
     }
 
-    // If resolved, update asset status back to operational
     if (body.status === "resolved" || body.status === "closed") {
       await Asset.findByIdAndUpdate(issue.asset, { status: "operational" });
     }
@@ -88,6 +161,13 @@ export async function DELETE(
     const user = await getCurrentUser();
     if (!user)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    if (!["Administrator", "Supervisor"].includes(user.role)) {
+      return NextResponse.json(
+        { message: "Only Administrators and Supervisors can delete issues." },
+        { status: 403 },
+      );
+    }
 
     await connectMongodb();
     const { id } = await params;

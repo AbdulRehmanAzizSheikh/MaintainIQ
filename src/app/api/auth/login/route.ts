@@ -39,14 +39,30 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate JWT
-    const token = generateToken({ id: user._id.toString() });
+    if (!user.verify?.status) {
+      return NextResponse.json(
+        {
+          message: "Verify your email before login.",
+          verifyRequired: true,
+          email: user.email,
+        },
+        { status: 403 },
+      );
+    }
 
-    // Set cookie — httpOnly so JS can't read it, but middleware can
+    // Generate JWT with 1h expiry and session start for refresh logic
+    const token = generateToken(
+      { id: user._id.toString(), sessionStart: Date.now() },
+      60 * 60,
+    );
+
+    // Set cookie — httpOnly so JS can't read it, but token itself expires in 1 hour
     const cookieStore = await cookies();
     cookieStore.set("token", token, {
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 24 * 60 * 60, // 24 hours cookie retention
       path: "/",
+      httpOnly: true,
+      sameSite: "lax",
     });
 
     return NextResponse.json(

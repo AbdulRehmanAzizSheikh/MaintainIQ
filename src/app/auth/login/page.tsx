@@ -35,11 +35,14 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success(`Welcome back, ${data.user?.username || ""}!`);
-        // Hard navigation — forces browser to re-send cookies on the next request
-        // router.push() is a client-side navigation and can race with cookie setting
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 500);
+      } else if (data.verifyRequired) {
+        toast.error(data.message || "Verify your email before login.");
+        setTimeout(() => {
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(form.email.trim())}`;
+        }, 200);
       } else {
         toast.error(data.message || "Login failed");
         setLoading(false);

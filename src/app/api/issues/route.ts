@@ -7,16 +7,29 @@ import { uploadImage } from "@/utils/cloudinary";
 // GET /api/issues — list all issues
 export async function GET(req: NextRequest) {
   try {
+    const currentUser = await getCurrentUser();
     await connectMongodb();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const priority = searchParams.get("priority");
     const assetId = searchParams.get("asset");
+    const assignedTo = searchParams.get("assignedTo");
 
     const query: Record<string, unknown> = {};
     if (status) query.status = status;
     if (priority) query.priority = priority;
     if (assetId) query.asset = assetId;
+    if (assignedTo) query.assignedTo = assignedTo;
+
+    if (
+      currentUser?.role === "Technician" &&
+      !assignedTo &&
+      !assetId &&
+      !status &&
+      !priority
+    ) {
+      query.assignedTo = currentUser._id;
+    }
 
     const issues = await Issue.find(query)
       .populate("asset", "name assetTag category location")

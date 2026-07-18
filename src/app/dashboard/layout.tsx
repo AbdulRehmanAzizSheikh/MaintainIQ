@@ -18,6 +18,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import SessionRefresher from "@/components/SessionRefresher";
 
 interface UserProfile {
   _id: string;
@@ -76,32 +77,39 @@ export default function DashboardLayout({
       roles: ["Administrator", "Supervisor", "Technician", "Reporter"],
     },
     {
-      name: "Asset Registry",
-      href: "/dashboard/assets",
-      icon: Boxes,
-      exact: false,
-      roles: ["Administrator", "Supervisor", "Technician"],
-    },
-    {
       name: "Issue Triage",
       href: "/dashboard/issues",
       icon: AlertTriangle,
       exact: false,
-      roles: ["Administrator", "Supervisor", "Technician", "Reporter"],
+      roles: ["Administrator", "Supervisor", "Technician"],
     },
     {
-      name: "Service History",
+      name: "My Service History",
       href: "/dashboard/service-history",
       icon: ClipboardList,
       exact: false,
       roles: ["Administrator", "Supervisor", "Technician"],
     },
     {
+      name: "Asset Registry",
+      href: "/dashboard/assets",
+      icon: Boxes,
+      exact: false,
+      roles: ["Administrator", "Supervisor"],
+    },
+    {
       name: "User Management",
       href: "/dashboard/users",
       icon: Users,
       exact: false,
-      roles: ["Administrator"], // Admin only
+      roles: ["Administrator"],
+    },
+    {
+      name: "Account",
+      href: "/dashboard/account",
+      icon: UserIcon,
+      exact: false,
+      roles: ["Administrator", "Supervisor", "Technician", "Reporter"],
     },
   ];
 
@@ -118,6 +126,7 @@ export default function DashboardLayout({
 
   return (
     <div className="h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
+      <SessionRefresher />
       <Toaster position="top-right" />
 
       {/* Mobile Top Bar */}

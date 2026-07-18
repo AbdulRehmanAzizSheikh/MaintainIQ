@@ -24,6 +24,9 @@ const userSchema = new Schema(
       enum: ["Administrator", "Technician", "Reporter", "Supervisor"],
       default: "Reporter",
     },
+    avatarUrl: {
+      type: String,
+    },
     verify: {
       status: {
         type: Boolean,
@@ -37,6 +40,12 @@ const userSchema = new Schema(
           type: Date,
         },
       },
+    },
+    passwordReset: {
+      otp: {
+        code: { type: String },
+      },
+      expireAt: { type: Date },
     },
   },
   { timestamps: true },

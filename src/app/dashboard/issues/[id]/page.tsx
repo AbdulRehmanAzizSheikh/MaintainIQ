@@ -69,6 +69,7 @@ export default function IssueDetailPage({
   const router = useRouter();
   const [issue, setIssue] = useState<Issue | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [userRole, setUserRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -82,17 +83,20 @@ export default function IssueDetailPage({
   useEffect(() => {
     const load = async () => {
       try {
-        const [issueRes, usersRes] = await Promise.all([
+        const [issueRes, usersRes, userRes] = await Promise.all([
           fetch(`/api/issues/${id}`),
           fetch("/api/users"),
+          fetch("/api/auth/me"),
         ]);
         const issueData = await issueRes.json();
         const usersData = await usersRes.json();
+        const userData = await userRes.json();
 
         if (!issueRes.ok) throw new Error("Issue not found");
 
         setIssue(issueData.issue);
         setUsers(usersData.users || []);
+        setUserRole(userData.user?.role || "");
         setForm({
           status: issueData.issue.status,
           assignedTo: issueData.issue.assignedTo?._id || "",
@@ -164,7 +168,11 @@ export default function IssueDetailPage({
         setIssue((prev) =>
           prev ? { ...prev, aiSuggestion: data.recommendation } : prev,
         );
-        toast.success(data.isMock ? "Smart AI diagnostics generated!" : "AI recommendation fetched!");
+        toast.success(
+          data.isMock
+            ? "Smart AI diagnostics generated!"
+            : "AI recommendation fetched!",
+        );
       } else {
         toast.error("AI recommendation failed");
       }
@@ -191,6 +199,9 @@ export default function IssueDetailPage({
   }
 
   if (!issue) return null;
+
+  const canManageIssue =
+    userRole === "Administrator" || userRole === "Supervisor";
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -232,7 +243,9 @@ export default function IssueDetailPage({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-slate-400">Name</span>
-                <p className="text-white font-semibold mt-0.5">{issue.asset?.name}</p>
+                <p className="text-white font-semibold mt-0.5">
+                  {issue.asset?.name}
+                </p>
               </div>
               <div>
                 <span className="text-slate-400">Asset Tag</span>
@@ -323,7 +336,11 @@ export default function IssueDetailPage({
                 disabled={aiLoading}
                 className="text-xs font-bold px-3 py-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-all disabled:opacity-50"
               >
-                {aiLoading ? "Analyzing..." : issue.aiSuggestion ? "Re-analyze" : "Get AI Diagnosis"}
+                {aiLoading
+                  ? "Analyzing..."
+                  : issue.aiSuggestion
+                    ? "Re-analyze"
+                    : "Get AI Diagnosis"}
               </button>
             </div>
             {issue.aiSuggestion ? (
@@ -332,7 +349,8 @@ export default function IssueDetailPage({
               </div>
             ) : (
               <p className="text-sm text-slate-500 italic">
-                Click &ldquo;Get AI Diagnosis&rdquo; to receive Gemini-powered root cause analysis and maintenance recommendations.
+                Click &ldquo;Get AI Diagnosis&rdquo; to receive Gemini-powered
+                root cause analysis and maintenance recommendations.
               </p>
             )}
           </div>
@@ -364,43 +382,47 @@ export default function IssueDetailPage({
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                  Priority
-                </label>
-                <select
-                  value={form.priority}
-                  onChange={(e) =>
-                    setForm({ ...form, priority: e.target.value })
-                  }
-                  className="w-full bg-slate-950 border border-slate-800 text-slate-300 py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </div>
+              {canManageIssue && (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                      Priority
+                    </label>
+                    <select
+                      value={form.priority}
+                      onChange={(e) =>
+                        setForm({ ...form, priority: e.target.value })
+                      }
+                      className="w-full bg-slate-950 border border-slate-800 text-slate-300 py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                  Assign Technician
-                </label>
-                <select
-                  value={form.assignedTo}
-                  onChange={(e) =>
-                    setForm({ ...form, assignedTo: e.target.value })
-                  }
-                  className="w-full bg-slate-950 border border-slate-800 text-slate-300 py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
-                >
-                  <option value="">— Unassigned —</option>
-                  {users.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.username} ({u.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                      Assign Technician
+                    </label>
+                    <select
+                      value={form.assignedTo}
+                      onChange={(e) =>
+                        setForm({ ...form, assignedTo: e.target.value })
+                      }
+                      className="w-full bg-slate-950 border border-slate-800 text-slate-300 py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                    >
+                      <option value="">— Unassigned —</option>
+                      {users.map((u) => (
+                        <option key={u._id} value={u._id}>
+                          {u.username} ({u.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-slate-400 mb-1.5">
@@ -435,7 +457,8 @@ export default function IssueDetailPage({
               Service Record
             </h3>
             <p className="text-xs text-slate-400 mb-4">
-              Once the repair is done, log a service record with parts replaced, cost, and photos.
+              Once the repair is done, log a service record with parts replaced,
+              cost, and photos.
             </p>
             <button
               onClick={logServiceRecord}

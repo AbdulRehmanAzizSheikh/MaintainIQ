@@ -35,6 +35,7 @@ export default function AssetsList() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
+  const [userRole, setUserRole] = useState<string>("");
 
   const fetchAssets = async () => {
     setLoading(true);
@@ -57,6 +58,11 @@ export default function AssetsList() {
   };
 
   useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setUserRole(d.user?.role || ""))
+      .catch(() => setUserRole(""));
+
     fetchAssets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, status]);
@@ -91,13 +97,15 @@ export default function AssetsList() {
             Manage facility assets, monitor status, and export QR codes.
           </p>
         </div>
-        <Link
-          href="/dashboard/assets/new"
-          className="inline-flex items-center gap-2 px-4.5 py-2.5 bg-cyan-500 text-slate-950 font-bold rounded-xl hover:bg-cyan-400 transition-all text-sm shadow-lg shadow-cyan-500/10 shrink-0 self-start sm:self-auto"
-        >
-          <Plus className="w-5 h-5" />
-          Add New Asset
-        </Link>
+        {["Administrator", "Supervisor"].includes(userRole) && (
+          <Link
+            href="/dashboard/assets/new"
+            className="inline-flex items-center gap-2 px-4.5 py-2.5 bg-cyan-500 text-slate-950 font-bold rounded-xl hover:bg-cyan-400 transition-all text-sm shadow-lg shadow-cyan-500/10 shrink-0 self-start sm:self-auto"
+          >
+            <Plus className="w-5 h-5" />
+            Add New Asset
+          </Link>
+        )}
       </div>
 
       {/* Filters & Search */}

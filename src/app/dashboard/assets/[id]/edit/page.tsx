@@ -52,8 +52,8 @@ export default function EditAssetPage({
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
-        if (d.user?.role !== "Administrator") {
-          toast.error("Only Administrators can edit assets.");
+        if (!["Administrator", "Supervisor"].includes(d.user?.role)) {
+          toast.error("Only Administrators and Supervisors can edit assets.");
           router.push("/dashboard/assets");
         }
       })

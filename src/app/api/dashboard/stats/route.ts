@@ -10,6 +10,9 @@ export async function GET() {
   try {
     await connectMongodb();
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const [
       totalAssets,
       operationalAssets,
@@ -21,8 +24,15 @@ export async function GET() {
       criticalIssues,
       totalServiceRecords,
       totalTechnicians,
+      totalSupervisors,
+      totalReporters,
+      totalAdmins,
+      totalAccounts,
+      issuesReportedToday,
+      issuesSolvedToday,
       recentIssues,
       issuesByPriority,
+      issuesByStatus,
       assetsByCategory,
       monthlyServiceRecords,
     ] = await Promise.all([
@@ -31,21 +41,29 @@ export async function GET() {
       Asset.countDocuments({ status: "under_maintenance" }),
       Asset.countDocuments({ status: "faulty" }),
       Issue.countDocuments(),
-      Issue.countDocuments({ status: { $in: ["open", "assigned", "in_progress"] } }),
+      Issue.countDocuments({
+        status: { $in: ["open", "assigned", "in_progress"] },
+      }),
       Issue.countDocuments({ status: { $in: ["resolved", "closed"] } }),
       Issue.countDocuments({ priority: "critical", status: { $ne: "closed" } }),
       ServiceRecord.countDocuments(),
       User.countDocuments({ role: "Technician" }),
+      User.countDocuments({ role: "Supervisor" }),
+      User.countDocuments({ role: "Reporter" }),
+      User.countDocuments({ role: "Administrator" }),
+      User.countDocuments(),
+      Issue.countDocuments({ createdAt: { $gte: today } }),
+      Issue.countDocuments({
+        status: { $in: ["resolved", "closed"] },
+        updatedAt: { $gte: today },
+      }),
       Issue.find()
         .populate("asset", "name assetTag")
         .sort({ createdAt: -1 })
         .limit(5),
-      Issue.aggregate([
-        { $group: { _id: "$priority", count: { $sum: 1 } } },
-      ]),
-      Asset.aggregate([
-        { $group: { _id: "$category", count: { $sum: 1 } } },
-      ]),
+      Issue.aggregate([{ $group: { _id: "$priority", count: { $sum: 1 } } }]),
+      Issue.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+      Asset.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }]),
       ServiceRecord.aggregate([
         {
           $group: {
@@ -76,12 +94,21 @@ export async function GET() {
             open: openIssues,
             resolved: resolvedIssues,
             critical: criticalIssues,
+            reportedToday: issuesReportedToday,
+            solvedToday: issuesSolvedToday,
+          },
+          users: {
+            totalAccounts,
+            administrators: totalAdmins,
+            supervisors: totalSupervisors,
+            technicians: totalTechnicians,
+            reporters: totalReporters,
           },
           serviceRecords: totalServiceRecords,
-          technicians: totalTechnicians,
           recentIssues,
           charts: {
             issuesByPriority,
+            issuesByStatus,
             assetsByCategory,
             monthlyServiceRecords,
           },

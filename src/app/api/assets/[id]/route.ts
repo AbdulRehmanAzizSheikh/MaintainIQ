@@ -75,20 +75,28 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    // Non-admins can ONLY change the status field
-    let updateData = body;
-    if (user.role !== "Administrator") {
+    const isFullEditor = ["Administrator", "Supervisor"].includes(user.role);
+    const isStatusUpdater = user.role === "Technician";
+
+    let updateData: Record<string, unknown> = {};
+    if (isFullEditor) {
+      updateData = body;
+    } else if (isStatusUpdater) {
       if (!body.status) {
         return NextResponse.json(
           {
             message:
-              "Only Administrators can edit full asset details. You can only update the status.",
+              "Technicians can only update asset status. Administrators and Supervisors can update full asset details.",
           },
           { status: 403 },
         );
       }
-      // Allow only status change for Supervisor/Technician
       updateData = { status: body.status };
+    } else {
+      return NextResponse.json(
+        { message: "You do not have permission to update this asset." },
+        { status: 403 },
+      );
     }
 
     const asset = await Asset.findByIdAndUpdate(id, updateData, { new: true });
@@ -117,10 +125,10 @@ export async function DELETE(
     if (!user)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    // Only Administrator can delete
-    if (user.role !== "Administrator") {
+    // Only Administrator and Supervisor can delete
+    if (!["Administrator", "Supervisor"].includes(user.role)) {
       return NextResponse.json(
-        { message: "Only Administrators can delete assets." },
+        { message: "Only Administrators and Supervisors can delete assets." },
         { status: 403 },
       );
     }
@@ -128,9 +136,15 @@ export async function DELETE(
     await connectMongodb();
     const { id } = await params;
 
-    const asset = await Asset.findByIdAndDelete(id);
+    const asset = await Asset.findById(id);
     if (!asset)
       return NextResponse.json({ message: "Asset not found" }, { status: 404 });
+
+    await Promise.all([
+      Issue.deleteMany({ asset: asset._id }),
+      ServiceRecord.deleteMany({ asset: asset._id }),
+      asset.deleteOne(),
+    ]);
 
     return NextResponse.json(
       { success: true, message: "Asset deleted successfully" },
