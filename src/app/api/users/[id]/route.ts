@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectMongodb } from "@/lib/db";
 import User from "@/lib/models/User";
 import { getCurrentUser } from "@/utils/getUser";
+import sendMail from "@/utils/email/send";
+import roleAssignedEmail from "@/utils/email/templates/role-assigned";
 
 // GET /api/users/[id] — get a single user (Admin / Supervisor only)
 export async function GET(
@@ -90,8 +92,24 @@ export async function PATCH(
       );
     }
 
+    const previousRole = targetUser.role;
     targetUser.role = role;
     await targetUser.save();
+
+    if (previousRole !== role && targetUser.email) {
+      const appUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const loginUrl = `${appUrl}/auth/login`;
+      await sendMail({
+        to: targetUser.email,
+        subject: `Your role has been updated to ${role}`,
+        htmlTemplate: roleAssignedEmail({
+          username: targetUser.username,
+          role,
+          loginUrl,
+        }),
+      });
+    }
 
     return NextResponse.json(
       {
@@ -126,24 +144,39 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     if (currentUser.role !== "Administrator")
-      return NextResponse.json({ message: "Only Administrators can delete users." }, { status: 403 });
+      return NextResponse.json(
+        { message: "Only Administrators can delete users." },
+        { status: 403 },
+      );
 
     await connectMongodb();
     const { id } = await params;
 
     if (currentUser._id.toString() === id)
-      return NextResponse.json({ message: "You cannot delete your own account." }, { status: 400 });
+      return NextResponse.json(
+        { message: "You cannot delete your own account." },
+        { status: 400 },
+      );
 
     const targetUser = await User.findById(id);
     if (!targetUser)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
 
     if (targetUser.role === "Administrator")
-      return NextResponse.json({ message: "Cannot delete another Administrator." }, { status: 403 });
+      return NextResponse.json(
+        { message: "Cannot delete another Administrator." },
+        { status: 403 },
+      );
 
     await User.findByIdAndDelete(id);
-    return NextResponse.json({ success: true, message: "User deleted." }, { status: 200 });
+    return NextResponse.json(
+      { success: true, message: "User deleted." },
+      { status: 200 },
+    );
   } catch (error) {
-    return NextResponse.json({ success: false, message: "Server error", error }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Server error", error },
+      { status: 500 },
+    );
   }
 }

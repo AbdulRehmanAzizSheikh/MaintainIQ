@@ -39,6 +39,17 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!user.verify.status) {
+      return NextResponse.json(
+        {
+          message:
+            "Account not verified. Please verify your email before signing in.",
+          email: user.email,
+        },
+        { status: 403 },
+      );
+    }
+
     // Generate JWT
     const token = generateToken({ id: user._id.toString() });
 

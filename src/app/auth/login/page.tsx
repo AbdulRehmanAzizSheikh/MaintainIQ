@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Wrench, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -35,14 +35,20 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success(`Welcome back, ${data.user?.username || ""}!`);
-        // Hard navigation — forces browser to re-send cookies on the next request
-        // router.push() is a client-side navigation and can race with cookie setting
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 500);
       } else {
         toast.error(data.message || "Login failed");
-        setLoading(false);
+        if (res.status === 403 && data.email) {
+          setTimeout(() => {
+            window.location.href = `/auth/verify-email?email=${encodeURIComponent(
+              data.email,
+            )}`;
+          }, 600);
+        } else {
+          setLoading(false);
+        }
       }
     } catch {
       toast.error("Connection error. Check your internet and try again.");

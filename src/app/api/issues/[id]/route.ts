@@ -3,6 +3,8 @@ import { connectMongodb } from "@/lib/db";
 import Issue from "@/lib/models/Issue";
 import Asset from "@/lib/models/Asset";
 import { getCurrentUser } from "@/utils/getUser";
+import sendMail from "@/utils/email/send";
+import issueAssignedEmail from "@/utils/email/templates/issue-assigned";
 
 // GET /api/issues/[id]
 export async function GET(
@@ -48,6 +50,11 @@ export async function PUT(
       body.resolvedAt = new Date();
     }
 
+    const previousIssue = await Issue.findById(id).populate(
+      "assignedTo",
+      "username email",
+    );
+
     const issue = await Issue.findByIdAndUpdate(id, body, { new: true })
       .populate("asset", "name assetTag")
       .populate("assignedTo", "username email");
@@ -55,10 +62,35 @@ export async function PUT(
     if (!issue)
       return NextResponse.json({ message: "Issue not found" }, { status: 404 });
 
+    const wasAssignedTo = previousIssue?.assignedTo?.toString();
+    const nowAssignedTo = issue.assignedTo?._id?.toString() || null;
+
     // If assigned, update asset status to under_maintenance
     if (body.assignedTo || body.status === "in_progress") {
       await Asset.findByIdAndUpdate(issue.asset, {
         status: "under_maintenance",
+      });
+    }
+
+    // If assignment changed and the technician has email, send notification
+    if (
+      nowAssignedTo &&
+      issue.assignedTo &&
+      nowAssignedTo !== wasAssignedTo &&
+      issue.assignedTo.email
+    ) {
+      const issueUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/dashboard/issues/${issue._id}`;
+      await sendMail({
+        to: issue.assignedTo.email,
+        subject: "New maintenance task assigned to you",
+        htmlTemplate: issueAssignedEmail({
+          technicianName: issue.assignedTo.username,
+          issueTitle: issue.title,
+          assetName: issue.asset?.name || "Unknown asset",
+          issueUrl,
+          priority: issue.priority,
+          status: issue.status,
+        }),
       });
     }
 
