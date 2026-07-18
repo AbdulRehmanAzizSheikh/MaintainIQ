@@ -11,6 +11,7 @@ import {
   Users,
   Calendar,
   Wrench,
+  Plus,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -66,6 +67,34 @@ export default function Dashboard() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [userRole, setUserRole] = useState<
+    "Administrator" | "Supervisor" | "Technician" | "Reporter" | ""
+  >("");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setUserRole(data.user?.role || "");
+        }
+      } catch {
+        setUserRole("");
+      } finally {
+        setRoleLoaded(true);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!roleLoaded) return;
+    if (userRole === "Reporter") {
+      // disable non-dashboard actions for reporter
+    }
+  }, [roleLoaded, userRole]);
 
   useEffect(() => {
     setMounted(true);
@@ -189,6 +218,26 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-white">
+            Dashboard Overview
+          </h1>
+          <p className="text-sm text-slate-400">
+            Review facility performance and log issues directly from your
+            dashboard.
+          </p>
+        </div>
+        {userRole !== "Reporter" && (
+          <Link
+            href="/dashboard/issues/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-500 text-slate-950 font-bold rounded-xl hover:bg-cyan-400 transition-all text-sm shadow-lg shadow-cyan-500/10"
+          >
+            <Plus className="w-4 h-4" />
+            Log Manual Issue
+          </Link>
+        )}
+      </div>
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Assets */}
@@ -413,87 +462,89 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Issues Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
-            <h4 className="font-bold text-white">Recent Failure Tickets</h4>
+      {userRole !== "Reporter" && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-400" />
+              <h4 className="font-bold text-white">Recent Failure Tickets</h4>
+            </div>
+            <Link
+              href="/dashboard/issues"
+              className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+            >
+              Manage All Tickets
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            href="/dashboard/issues"
-            className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
-          >
-            Manage All Tickets
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
 
-        {stats.recentIssues.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-sm">
-            All clear! No active failure reports logged.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950/40 text-xs font-bold uppercase text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th className="px-6 py-4">Asset Label</th>
-                  <th className="px-6 py-4">Issue Description</th>
-                  <th className="px-6 py-4">Priority</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Logged Time</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {stats.recentIssues.map((issue) => (
-                  <tr
-                    key={issue._id}
-                    className="hover:bg-slate-800/20 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-semibold text-white">
-                        {issue.asset?.name || "Deleted Asset"}
-                      </div>
-                      <span className="text-xs text-slate-500 font-mono">
-                        {issue.asset?.assetTag || "N/A"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-slate-200">
-                      {issue.title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${getPriorityBadge(issue.priority)}`}
-                      >
-                        {issue.priority}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold uppercase ${getStatusBadge(issue.status)}`}
-                      >
-                        {issue.status.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500">
-                      {new Date(issue.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <Link
-                        href={`/dashboard/issues/${issue._id}`}
-                        className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
-                      >
-                        Inspect ticket &rarr;
-                      </Link>
-                    </td>
+          {stats.recentIssues.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-sm">
+              All clear! No active failure reports logged.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-300">
+                <thead className="bg-slate-950/40 text-xs font-bold uppercase text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th className="px-6 py-4">Asset Label</th>
+                    <th className="px-6 py-4">Issue Description</th>
+                    <th className="px-6 py-4">Priority</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Logged Time</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {stats.recentIssues.map((issue) => (
+                    <tr
+                      key={issue._id}
+                      className="hover:bg-slate-800/20 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-semibold text-white">
+                          {issue.asset?.name || "Deleted Asset"}
+                        </div>
+                        <span className="text-xs text-slate-500 font-mono">
+                          {issue.asset?.assetTag || "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-slate-200">
+                        {issue.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${getPriorityBadge(issue.priority)}`}
+                        >
+                          {issue.priority}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold uppercase ${getStatusBadge(issue.status)}`}
+                        >
+                          {issue.status.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500">
+                        {new Date(issue.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <Link
+                          href={`/dashboard/issues/${issue._id}`}
+                          className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
+                        >
+                          Inspect ticket &rarr;
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

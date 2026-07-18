@@ -57,6 +57,12 @@ export default function DashboardLayout({
     fetchUser();
   }, [router]);
 
+  useEffect(() => {
+    if (!loading && user?.role === "Reporter" && pathname !== "/dashboard") {
+      router.replace("/dashboard");
+    }
+  }, [loading, user, pathname, router]);
+
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -87,7 +93,7 @@ export default function DashboardLayout({
       href: "/dashboard/issues",
       icon: AlertTriangle,
       exact: false,
-      roles: ["Administrator", "Supervisor", "Technician", "Reporter"],
+      roles: ["Administrator", "Supervisor", "Technician"],
     },
     {
       name: "Service History",
@@ -175,8 +181,13 @@ export default function DashboardLayout({
             <div className="font-bold text-slate-200 text-sm truncate">
               {user?.username}
             </div>
-            <div className="inline-flex text-[10px] uppercase font-bold bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded mt-1 border border-cyan-800/40">
-              {user?.role}
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-wide text-slate-500">
+                Role
+              </span>
+              <span className="inline-flex text-[10px] uppercase font-bold bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800/40">
+                {user?.role}
+              </span>
             </div>
           </div>
         </div>
