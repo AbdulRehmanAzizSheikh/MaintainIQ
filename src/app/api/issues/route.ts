@@ -7,6 +7,10 @@ import { uploadImage } from "@/utils/cloudinary";
 // GET /api/issues — list all issues
 export async function GET(req: NextRequest) {
   try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser)
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
     await connectMongodb();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
@@ -17,6 +21,10 @@ export async function GET(req: NextRequest) {
     if (status) query.status = status;
     if (priority) query.priority = priority;
     if (assetId) query.asset = assetId;
+
+    if (currentUser.role === "Technician") {
+      query.assignedTo = currentUser._id;
+    }
 
     const issues = await Issue.find(query)
       .populate("asset", "name assetTag category location")
