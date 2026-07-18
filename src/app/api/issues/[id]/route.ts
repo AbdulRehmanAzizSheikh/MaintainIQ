@@ -12,15 +12,28 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user)
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
     await connectMongodb();
     const { id } = await params;
-    const issue = await Issue.findById(id)
+
+    let issueQuery = Issue.findById(id);
+    if (user.role === "Technician") {
+      issueQuery = Issue.findOne({ _id: id, assignedTo: user._id });
+    }
+
+    const issue = await issueQuery
       .populate("asset", "name assetTag category location status imageUrl")
       .populate("assignedTo", "username email role")
       .populate("reportedBy.userId", "username email");
 
     if (!issue)
-      return NextResponse.json({ message: "Issue not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Issue not found or access denied" },
+        { status: 404 },
+      );
 
     return NextResponse.json({ success: true, issue }, { status: 200 });
   } catch (error) {
@@ -45,17 +58,63 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    // If resolving, set resolvedAt and update asset status
-    if (body.status === "resolved" || body.status === "closed") {
-      body.resolvedAt = new Date();
-    }
-
     const previousIssue = await Issue.findById(id).populate(
       "assignedTo",
-      "username email",
+      "username email role",
     );
+    if (!previousIssue)
+      return NextResponse.json({ message: "Issue not found" }, { status: 404 });
 
-    const issue = await Issue.findByIdAndUpdate(id, body, { new: true })
+    const assignedToId = previousIssue.assignedTo
+      ? (previousIssue.assignedTo as any)._id
+        ? (previousIssue.assignedTo as any)._id.toString()
+        : previousIssue.assignedTo.toString()
+      : null;
+    const isAssignedTechnician =
+      assignedToId && assignedToId === user._id.toString();
+
+    const updateData: Record<string, unknown> = {};
+
+    if (user.role === "Technician") {
+      if (!isAssignedTechnician) {
+        return NextResponse.json(
+          { message: "You can only update issues assigned to you." },
+          { status: 403 },
+        );
+      }
+
+      const allowedStatuses = ["in_progress", "resolved", "closed"];
+      if (!body.status || !allowedStatuses.includes(body.status)) {
+        return NextResponse.json(
+          {
+            message:
+              "Technicians can only update the issue status to in_progress, resolved, or closed.",
+          },
+          { status: 403 },
+        );
+      }
+
+      updateData.status = body.status;
+    } else if (user.role === "Supervisor" || user.role === "Administrator") {
+      if (body.status) updateData.status = body.status;
+      if (body.priority) updateData.priority = body.priority;
+      if (Object.prototype.hasOwnProperty.call(body, "assignedTo")) {
+        updateData.assignedTo = body.assignedTo || null;
+      }
+      if (body.resolutionNotes)
+        updateData.resolutionNotes = body.resolutionNotes;
+    } else {
+      return NextResponse.json(
+        { message: "You do not have permission to update issues." },
+        { status: 403 },
+      );
+    }
+
+    if (updateData.status === "resolved" || updateData.status === "closed") {
+      updateData.resolvedAt = new Date();
+    }
+
+    const issue = await Issue.findByIdAndUpdate(id, updateData, { new: true })
       .populate("asset", "name assetTag")
       .populate("assignedTo", "username email");
 
@@ -66,7 +125,7 @@ export async function PUT(
     const nowAssignedTo = issue.assignedTo?._id?.toString() || null;
 
     // If assigned, update asset status to under_maintenance
-    if (body.assignedTo || body.status === "in_progress") {
+    if (updateData.assignedTo || issue.status === "in_progress") {
       await Asset.findByIdAndUpdate(issue.asset, {
         status: "under_maintenance",
       });
@@ -95,7 +154,7 @@ export async function PUT(
     }
 
     // If resolved, update asset status back to operational
-    if (body.status === "resolved" || body.status === "closed") {
+    if (issue.status === "resolved" || issue.status === "closed") {
       await Asset.findByIdAndUpdate(issue.asset, { status: "operational" });
     }
 
